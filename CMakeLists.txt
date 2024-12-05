@@ -5,10 +5,6 @@ set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_C_COMPILER clang CACHE STRING "C Compiler")
-set(CMAKE_CXX_COMPILER clang++ CACHE STRING "C++ Compiler")
-set(CMAKE_LINKER clang++ CACHE STRING "Linker")
-
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "raylib static" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "raylib examples" FORCE)
 add_subdirectory(vendor/raylib)
