@@ -56,8 +56,8 @@ int main() {
     entityManager.registerStorage(velocities);
 
     auto entity = entityManager.createEntity();
-    transforms.add(entity, {0, 0});
-    velocities.add(entity, {1, 1});
+    transforms.add(entity, { 0, 0 });
+    velocities.add(entity, { 1, 1 });
 
     systemManager.addSystem<MovementSystem>(transforms, velocities);
 
