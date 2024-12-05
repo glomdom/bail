@@ -36,6 +36,10 @@ void EntityManager::destroyEntity(Entity entity) {
     if (entity < generations.size()) {
         ++generations[entity];
         availableEntities.push(entity);
+
+        for (const auto& remover : removers) {
+            remover(entity);
+        }
     }
 }
 

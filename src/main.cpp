@@ -52,6 +52,9 @@ int main() {
     ecs::ComponentStorage<Velocity> velocities;
     ecs::SystemManager systemManager;
 
+    entityManager.registerStorage(transforms);
+    entityManager.registerStorage(velocities);
+
     auto entity = entityManager.createEntity();
     transforms.add(entity, {0, 0});
     velocities.add(entity, {1, 1});
@@ -59,13 +62,23 @@ int main() {
     systemManager.addSystem<MovementSystem>(transforms, velocities);
 
     const float dt = 1.0f / 60.0f;
-    for (int i = 0; i < 61; ++i) {
+    for (int i = 0; i < 10; ++i) {
         auto transform = transforms.get(entity);
         if (transform) {
             std::cout << "entity position -> (" << transform->get().x << ", " << transform->get().y << ")\n";
         }
 
         systemManager.update(dt);
+    }
+
+    entityManager.destroyEntity(entity);
+
+    if (!transforms.get(entity)) {
+        std::cout << "transform component cleaned up successfully\n";
+    }
+
+    if (!velocities.get(entity)) {
+        std::cout << "velocity component cleaned up successfully\n";
     }
 
     return 0;

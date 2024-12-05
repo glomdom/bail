@@ -17,10 +17,12 @@
 
 #pragma once
 
+#include <functional>
 #include <queue>
 #include <vector>
 
 #include "aliases.hpp"
+#include "componentstorage.hpp"
 
 namespace bail::ecs {
 
@@ -29,12 +31,21 @@ public:
     Entity createEntity();
     void destroyEntity(Entity entity);
 
+    template <typename Component>
+    void registerStorage(ComponentStorage<Component>& storage) {
+        removers.emplace_back([&storage](Entity entity) {
+            storage.remove(entity);
+        });
+    }
+
     bool isValid(Entity entity, uint32_t generation) const;
 
 private:
     std::queue<uint32_t> availableEntities;
     std::vector<uint32_t> generations;
     uint32_t next = 0;
+
+    std::vector<std::function<void(Entity)>> removers;
 };
 
 }
