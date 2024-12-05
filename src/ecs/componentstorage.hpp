@@ -18,9 +18,11 @@
 #pragma once
 
 #include <optional>
+#include <stdexcept>
 #include <unordered_map>
 
 #include "aliases.hpp"
+#include "entitymanager.hpp"
 
 namespace bail::ecs {
 
@@ -29,7 +31,17 @@ class ComponentStorage {
     using ComponentMap = std::unordered_map<Entity, Component>;
 
 public:
+    explicit ComponentStorage(EntityManager& manager) : manager(manager) {
+        manager.registerRemover([this](Entity entity) {
+            this->remove(entity);
+        });
+    }
+
     void add(Entity entity, Component component) {
+        if (!manager.isValid(entity, manager.getEntityGeneration(entity))) {
+            throw std::runtime_error("attempted to add a component to an invalid entity");
+        }
+
         components[entity] = std::move(component);
     }
 
@@ -38,6 +50,10 @@ public:
     }
     
     std::optional<std::reference_wrapper<Component>> get(Entity entity) {
+        if (!manager.isValid(entity, manager.getEntityGeneration(entity))) {
+            return std::nullopt;
+        }
+
         auto it = components.find(entity);
         if (it != components.end()) {
             return std::ref(it->second);
@@ -49,7 +65,9 @@ public:
     template <typename Callback>
     void forEach(Callback&& callback) {
         for (auto& [entity, component] : components) {
-            callback(entity, component);
+            if (manager.isValid(entity, manager.getEntityGeneration(entity))) {
+                callback(entity, component);
+            }
         }
     }
 
@@ -58,6 +76,7 @@ public:
 
 private:
     ComponentMap components;
+    EntityManager manager;
 };
 
 }

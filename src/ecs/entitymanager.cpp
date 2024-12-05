@@ -17,6 +17,8 @@
 
 #include "entitymanager.hpp"
 
+#include <stdexcept>
+
 namespace bail::ecs {
 
 Entity EntityManager::createEntity() {
@@ -27,7 +29,9 @@ Entity EntityManager::createEntity() {
         return id;
     }
 
-    generations.push_back(0);
+    if (next >= generations.size()) {
+        generations.resize(next + 1, 0);
+    }
 
     return next++;
 }
@@ -44,7 +48,18 @@ void EntityManager::destroyEntity(Entity entity) {
 }
 
 bool EntityManager::isValid(Entity entity, uint32_t generation) const {
-    return entity < generations.size() && generations[entity] == generation;
+    bool inRange = entity < generations.size();
+    bool generationMatch = inRange && generations[entity] == generation;
+
+    return generationMatch;
+}
+
+Generation EntityManager::getEntityGeneration(Entity entity) const {
+    if (entity >= generations.size()) {
+        throw std::runtime_error("invalid entity id");
+    }
+
+    return generations[entity];
 }
 
 }

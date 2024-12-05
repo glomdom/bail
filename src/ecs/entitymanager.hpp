@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "aliases.hpp"
-#include "componentstorage.hpp"
 
 namespace bail::ecs {
 
@@ -31,14 +30,13 @@ public:
     Entity createEntity();
     void destroyEntity(Entity entity);
 
-    template <typename Component>
-    void registerStorage(ComponentStorage<Component>& storage) {
-        removers.emplace_back([&storage](Entity entity) {
-            storage.remove(entity);
-        });
+    template <typename Remover>
+    void registerRemover(Remover&& remover) {
+        removers.emplace_back(std::forward<Remover>(remover));
     }
 
     bool isValid(Entity entity, uint32_t generation) const;
+    Generation getEntityGeneration(Entity entity) const;
 
 private:
     std::queue<uint32_t> availableEntities;

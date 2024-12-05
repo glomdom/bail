@@ -48,14 +48,12 @@ public:
 
 int main() {
     ecs::EntityManager entityManager;
-    ecs::ComponentStorage<Transform> transforms;
-    ecs::ComponentStorage<Velocity> velocities;
+    auto entity = entityManager.createEntity();
+
+    ecs::ComponentStorage<Transform> transforms(entityManager);
+    ecs::ComponentStorage<Velocity> velocities(entityManager);
     ecs::SystemManager systemManager;
 
-    entityManager.registerStorage(transforms);
-    entityManager.registerStorage(velocities);
-
-    auto entity = entityManager.createEntity();
     transforms.add(entity, { 0, 0 });
     velocities.add(entity, { 1, 1 });
 
@@ -63,12 +61,12 @@ int main() {
 
     const float dt = 1.0f / 60.0f;
     for (int i = 0; i < 10; ++i) {
+        systemManager.update(dt);
+
         auto transform = transforms.get(entity);
         if (transform) {
             std::cout << "entity position -> (" << transform->get().x << ", " << transform->get().y << ")\n";
         }
-
-        systemManager.update(dt);
     }
 
     entityManager.destroyEntity(entity);
