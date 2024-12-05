@@ -18,6 +18,7 @@
 #pragma once
 
 #include "componentstorage.hpp"
+#include "query.hpp"
 
 namespace bail::ecs {
 
@@ -27,6 +28,14 @@ public:
     virtual ~System() = default;
     
     virtual void update(float dt, ComponentStorage<Components>&... storages) = 0;
+};
+
+template <typename... Components>
+class QuerySystem : public System<Components...> {
+protected:
+    Query<Components...> createQuery(ComponentStorage<Components>&... storages) {
+        return Query(storages...);
+    }
 };
 
 }

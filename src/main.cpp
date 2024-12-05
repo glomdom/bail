@@ -32,16 +32,14 @@ struct Velocity {
     float dx, dy;
 };
 
-class MovementSystem : public ecs::System<Transform, Velocity> {
+class MovementSystem : public ecs::QuerySystem<Transform, Velocity> {
 public:
-    MovementSystem() = default;
-
     void update(float dt, ecs::ComponentStorage<Transform>& transforms, ecs::ComponentStorage<Velocity>& velocities) override {
-        transforms.forEach([&](ecs::Entity entity, Transform& transform) {
-            if (auto velocity = velocities.get(entity)) {
-                transform.x += velocity->get().dx * dt;
-                transform.y += velocity->get().dy * dt;
-            }
+        auto query = this->createQuery(transforms, velocities);
+
+        query.forEach([&](ecs::Entity entity, Transform& transform, Velocity& velocity) {
+            transform.x += velocity.dx * dt;
+            transform.y += velocity.dy * dt;
         });
     }
 };

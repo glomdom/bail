@@ -74,6 +74,10 @@ public:
     auto begin() { return components.begin(); }
     auto end() { return components.end(); }
 
+    bool contains(Entity entity) const {
+        return components.find(entity) != components.end();
+    }
+
 private:
     ComponentMap components;
     EntityManager manager;
