@@ -85,14 +85,14 @@ int main() {
         auto& gravities = systemManager.getStorage<Gravity>();
         auto& lifetimes = systemManager.getStorage<Lifetime>();
 
+        auto& gravitySystem = systemManager.addSystem<GravitySystem>(velocities, gravities);
+        auto& movementSystem = systemManager.addSystem<MovementSystem>(transforms, velocities);
+
         auto entity1 = systemManager.getEntityManager().createEntity();
         transforms.add(entity1, { 0, 0 });
         velocities.add(entity1, { 10, 0 });
         gravities.add(entity1, { 9.8f });
         lifetimes.add(entity1, { 5.0f });
-
-        auto& gravitySystem = systemManager.addSystem<GravitySystem>(velocities, gravities);
-        auto& movementSystem = systemManager.addSystem<MovementSystem>(transforms, velocities);
 
         const float dt = 1.0f / 60.0f;
         for (int i = 0; i < 20; ++i) {
