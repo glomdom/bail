@@ -18,6 +18,7 @@
 #pragma once
 
 #include "componentstorage.hpp"
+#include "concepts.hpp"
 
 namespace bail::ecs {
 
@@ -26,7 +27,7 @@ public:
     virtual ~System() = default;
     virtual void update(float dt) = 0;
 
-    template <typename... Components>
+    template <ComponentConcept... Components>
     auto createQuery(ComponentStorage<Components>&... storages) {
         return [&, this](auto&& func) {
             for (auto& [entity, component] : std::get<0>(std::forward_as_tuple(storages...)).getComponents()) {

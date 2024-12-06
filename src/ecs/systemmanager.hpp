@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "componentstorage.hpp"
+#include "concepts.hpp"
 #include "system.hpp"
 
 namespace bail::ecs {
@@ -32,24 +33,22 @@ public:
     EntityManager& getEntityManager();
     void update(float dt);
 
-    template <typename SystemType, typename... Args>
-    SystemType& addSystem(Args&&... args) {
-        auto system = std::make_unique<SystemType>(std::forward<Args>(args)...);
-        SystemType& ref = *system;
-
+    template <SystemConcept T, typename... Args>
+    T& addSystem(Args&&... args) {
+        auto system = std::make_unique<T>(std::forward<Args>(args)...);
         systems.emplace_back(std::move(system));
 
-        return ref;
+        return static_cast<T&>(*systems.back());
     }
 
-    template <typename Component>
-    ComponentStorage<Component>& getStorage() {
-        auto typeIndex = std::type_index(typeid(ComponentStorage<Component>));
+    template <ComponentConcept T>
+    ComponentStorage<T>& getStorage() {
+        auto typeIndex = std::type_index(typeid(ComponentStorage<T>));
         if (componentStorages.find(typeIndex) == componentStorages.end()) {
-            componentStorages[typeIndex] = std::make_any<ComponentStorage<Component>>();
+            componentStorages[typeIndex] = std::make_any<ComponentStorage<T>>();
         }
 
-        return *std::any_cast<ComponentStorage<Component>>(&componentStorages[typeIndex]);
+        return *std::any_cast<ComponentStorage<T>>(&componentStorages[typeIndex]);
     }
 
 private:

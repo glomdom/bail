@@ -21,11 +21,12 @@
 #include <unordered_map>
 
 #include "aliases.hpp"
+#include "concepts.hpp"
 #include "entitymanager.hpp"
 
 namespace bail::ecs {
 
-template <typename Component>
+template <ComponentConcept Component>
 class ComponentStorage {
 public:
     void add(Entity entity, Component component) {
