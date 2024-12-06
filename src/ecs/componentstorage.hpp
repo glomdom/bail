@@ -41,11 +41,15 @@ public:
             throw std::runtime_error(std::format("entity {} does not have component", entity));
         }
 
-        return components.get(entity);
+        return components.at(entity);
     }
 
     bool contains(Entity entity) const {
         return components.contains(entity);
+    }
+
+    auto& getComponents() {
+        return components;
     }
 
     template <typename Func>

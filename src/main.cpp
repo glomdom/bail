@@ -47,7 +47,7 @@ public:
         : velocities(velocities), gravities(gravities) {}
 
     void update(float dt) override {
-        auto query = createQuery();
+        auto query = createQuery(velocities, gravities);
         query([&](ecs::Entity entity, Velocity& velocity, Gravity& gravity) {
             velocity.dy += gravity.force * dt;
         });
@@ -56,6 +56,24 @@ public:
 private:
     ecs::ComponentStorage<Velocity>& velocities;
     ecs::ComponentStorage<Gravity>& gravities;
+};
+
+class MovementSystem : public ecs::System {
+public:
+    MovementSystem(ecs::ComponentStorage<Transform>& transforms, ecs::ComponentStorage<Velocity>& velocities)
+        : transforms(transforms), velocities(velocities) {}
+
+    void update(float dt) override {
+        auto query = createQuery(transforms, velocities);
+        query([&](ecs::Entity entity, Transform& transform, Velocity& velocity) {
+            transform.x += velocity.dx * dt;
+            transform.y += velocity.dy * dt;
+        });
+    }
+
+private:
+    ecs::ComponentStorage<Transform>& transforms;
+    ecs::ComponentStorage<Velocity>& velocities;
 };
 
 int main() {
@@ -74,15 +92,16 @@ int main() {
         lifetimes.add(entity1, { 5.0f });
 
         auto& gravitySystem = systemManager.addSystem<GravitySystem>(velocities, gravities);
+        auto& movementSystem = systemManager.addSystem<MovementSystem>(transforms, velocities);
 
         const float dt = 1.0f / 60.0f;
-        for (int i = 0; i < 600; ++i) {
+        for (int i = 0; i < 20; ++i) {
             systemManager.update(dt);
 
             std::cout << "frame: " << i << "\n";
 
             transforms.forEach([](ecs::Entity entity, Transform& transform) {
-                std::cout << "Entity " << entity << " position -> (" << transform.x << ", " << transform.y << ")\n";
+                std::cout << "entity " << entity << " position -> (" << transform.x << ", " << transform.y << ")\n";
             });
         }
     } catch (std::exception& e) {

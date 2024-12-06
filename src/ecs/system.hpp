@@ -29,13 +29,11 @@ public:
     template <typename... Components>
     auto createQuery(ComponentStorage<Components>&... storages) {
         return [&, this](auto&& func) {
-            ((void)storages.forEach(
-                [&](Entity entity, Components&... components) {
-                    if ((storages.contains(entity) && ...)) {
-                        func(entity, components...);
-                    }
+            for (auto& [entity, component] : std::get<0>(std::forward_as_tuple(storages...)).getComponents()) {
+                if ((storages.contains(entity) && ...)) {
+                    func(entity, storages.get(entity)...);
                 }
-            ), ...);
+            }
         };
     }
 };
