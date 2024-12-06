@@ -30,16 +30,24 @@ template <ComponentConcept Component>
 class ComponentStorage {
 public:
     void add(Entity entity, Component component) {
+        if (components.contains(entity)) {
+            throw std::logic_error(std::format("component already exists for entity with id {}", entity));
+        }
+
         components[entity] = std::move(component);
     }
 
     void remove(Entity entity) {
+        if (components.contains(entity)) {
+            throw std::logic_error(std::format("component not found for entity with id {}", entity));
+        }
+
         components.erase(entity);
     }
 
     Component& get(Entity entity) {
         if (!contains(entity)) {
-            throw std::runtime_error(std::format("entity {} does not have component", entity));
+            throw std::out_of_range(std::format("entity {} does not have components", entity));
         }
 
         return components.at(entity);
