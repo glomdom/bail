@@ -79,13 +79,13 @@ private:
 int main() {
     try {
         ecs::SystemManager systemManager;
-        auto entity1 = systemManager.getEntityManager().createEntity();
 
         auto& transforms = systemManager.getStorage<Transform>();
         auto& velocities = systemManager.getStorage<Velocity>();
         auto& gravities = systemManager.getStorage<Gravity>();
         auto& lifetimes = systemManager.getStorage<Lifetime>();
 
+        auto entity1 = systemManager.getEntityManager().createEntity();
         transforms.add(entity1, { 0, 0 });
         velocities.add(entity1, { 10, 0 });
         gravities.add(entity1, { 9.8f });
@@ -98,7 +98,7 @@ int main() {
         for (int i = 0; i < 20; ++i) {
             systemManager.update(dt);
 
-            std::cout << "frame: " << i << "\n";
+            std::cout << "frame -> " << i+1 << "\n";
 
             transforms.forEach([](ecs::Entity entity, Transform& transform) {
                 std::cout << "entity " << entity << " position -> (" << transform.x << ", " << transform.y << ")\n";
@@ -108,5 +108,5 @@ int main() {
         std::cerr << e.what();
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
