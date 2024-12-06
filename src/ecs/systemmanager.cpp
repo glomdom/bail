@@ -15,31 +15,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "systemmanager.hpp"
 
-#include <functional>
-#include <queue>
-#include <unordered_map>
-#include <vector>
-
-#include "aliases.hpp"
+#include "entitymanager.hpp"
 
 namespace bail::ecs {
 
-class EntityManager {
-public:
-    Entity createEntity();
-    void destroyEntity(Entity entity);
-    void registerRemover(std::function<void(Entity)> remover);
-
-    bool isValid(Entity entity) const;
-    Generation getEntityGeneration(Entity entity) const;
-
-private:
-    Entity nextEntity = 0;
-    std::queue<Entity> availableEntities;
-    std::unordered_map<Entity, Generation> generationCounters;
-    std::vector<std::function<void(Entity)>> removers;
-};
-
+EntityManager& SystemManager::getEntityManager() {
+    return entityManager;
 }
+
+void SystemManager::update(float dt) {
+    for (auto& system : systems) {
+        system->update(dt);
+    }
+}
+
+};

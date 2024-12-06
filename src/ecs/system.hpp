@@ -18,23 +18,25 @@
 #pragma once
 
 #include "componentstorage.hpp"
-#include "query.hpp"
 
 namespace bail::ecs {
 
-template <typename... Components>
 class System {
 public:
     virtual ~System() = default;
-    
-    virtual void update(float dt, ComponentStorage<Components>&... storages) = 0;
-};
+    virtual void update(float dt) = 0;
 
-template <typename... Components>
-class QuerySystem : public System<Components...> {
-protected:
-    Query<Components...> createQuery(ComponentStorage<Components>&... storages) {
-        return Query(storages...);
+    template <typename... Components>
+    auto createQuery(ComponentStorage<Components>&... storages) {
+        return [&, this](auto&& func) {
+            ((void)storages.forEach(
+                [&](Entity entity, Components&... components) {
+                    if ((storages.contains(entity) && ...)) {
+                        func(entity, components...);
+                    }
+                }
+            ), ...);
+        };
     }
 };
 

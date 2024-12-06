@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <optional>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -28,58 +27,36 @@ namespace bail::ecs {
 
 template <typename Component>
 class ComponentStorage {
-    using ComponentMap = std::unordered_map<Entity, Component>;
-
 public:
-    explicit ComponentStorage(EntityManager& manager) : manager(manager) {
-        manager.registerRemover([this](Entity entity) {
-            this->remove(entity);
-        });
-    }
-
     void add(Entity entity, Component component) {
-        if (!manager.isValid(entity, manager.getEntityGeneration(entity))) {
-            throw std::runtime_error("attempted to add a component to an invalid entity");
-        }
-
         components[entity] = std::move(component);
     }
 
     void remove(Entity entity) {
         components.erase(entity);
     }
-    
-    std::optional<std::reference_wrapper<Component>> get(Entity entity) {
-        if (!manager.isValid(entity, manager.getEntityGeneration(entity))) {
-            return std::nullopt;
+
+    Component& get(Entity entity) {
+        if (!contains(entity)) {
+            throw std::runtime_error(std::format("entity {} does not have component", entity));
         }
 
-        auto it = components.find(entity);
-        if (it != components.end()) {
-            return std::ref(it->second);
-        }
-
-        return std::nullopt;
+        return components.get(entity);
     }
-
-    template <typename Callback>
-    void forEach(Callback&& callback) {
-        for (auto& [entity, component] : components) {
-            if (manager.isValid(entity, manager.getEntityGeneration(entity))) {
-                callback(entity, component);
-            }
-        }
-    }
-
-    auto begin() { return components.begin(); }
-    auto end() { return components.end(); }
 
     bool contains(Entity entity) const {
-        return components.find(entity) != components.end();
+        return components.contains(entity);
+    }
+
+    template <typename Func>
+    void forEach(Func func) {
+        for (auto& [entity, component] : components) {
+            func(entity, component);
+        }
     }
 
 private:
-    ComponentMap components;
+    std::unordered_map<Entity, Component> components;
     EntityManager manager;
 };
 

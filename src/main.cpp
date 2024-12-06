@@ -15,6 +15,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <exception>
 #include <iostream>
 
 #include "ecs/entitymanager.hpp"
@@ -32,49 +33,60 @@ struct Velocity {
     float dx, dy;
 };
 
-class MovementSystem : public ecs::QuerySystem<Transform, Velocity> {
-public:
-    void update(float dt, ecs::ComponentStorage<Transform>& transforms, ecs::ComponentStorage<Velocity>& velocities) override {
-        auto query = this->createQuery(transforms, velocities);
+struct Gravity {
+    float force = 9.8f;
+};
 
-        query.forEach([&](ecs::Entity entity, Transform& transform, Velocity& velocity) {
-            transform.x += velocity.dx * dt;
-            transform.y += velocity.dy * dt;
+struct Lifetime {
+    float timeLeft;
+};
+
+class GravitySystem : public ecs::System {
+public:
+    GravitySystem(ecs::ComponentStorage<Velocity>& velocities, ecs::ComponentStorage<Gravity>& gravities)
+        : velocities(velocities), gravities(gravities) {}
+
+    void update(float dt) override {
+        auto query = createQuery();
+        query([&](ecs::Entity entity, Velocity& velocity, Gravity& gravity) {
+            velocity.dy += gravity.force * dt;
         });
     }
+
+private:
+    ecs::ComponentStorage<Velocity>& velocities;
+    ecs::ComponentStorage<Gravity>& gravities;
 };
 
 int main() {
-    ecs::EntityManager entityManager;
-    auto entity = entityManager.createEntity();
+    try {
+        ecs::SystemManager systemManager;
+        auto entity1 = systemManager.getEntityManager().createEntity();
 
-    ecs::ComponentStorage<Transform> transforms(entityManager);
-    ecs::ComponentStorage<Velocity> velocities(entityManager);
-    ecs::SystemManager systemManager;
+        auto& transforms = systemManager.getStorage<Transform>();
+        auto& velocities = systemManager.getStorage<Velocity>();
+        auto& gravities = systemManager.getStorage<Gravity>();
+        auto& lifetimes = systemManager.getStorage<Lifetime>();
 
-    transforms.add(entity, { 0, 0 });
-    velocities.add(entity, { 1, 1 });
+        transforms.add(entity1, { 0, 0 });
+        velocities.add(entity1, { 10, 0 });
+        gravities.add(entity1, { 9.8f });
+        lifetimes.add(entity1, { 5.0f });
 
-    systemManager.addSystem<MovementSystem>(transforms, velocities);
+        auto& gravitySystem = systemManager.addSystem<GravitySystem>(velocities, gravities);
 
-    const float dt = 1.0f / 60.0f;
-    for (int i = 0; i < 10; ++i) {
-        systemManager.update(dt);
+        const float dt = 1.0f / 60.0f;
+        for (int i = 0; i < 600; ++i) {
+            systemManager.update(dt);
 
-        auto transform = transforms.get(entity);
-        if (transform) {
-            std::cout << "entity position -> (" << transform->get().x << ", " << transform->get().y << ")\n";
+            std::cout << "frame: " << i << "\n";
+
+            transforms.forEach([](ecs::Entity entity, Transform& transform) {
+                std::cout << "Entity " << entity << " position -> (" << transform.x << ", " << transform.y << ")\n";
+            });
         }
-    }
-
-    entityManager.destroyEntity(entity);
-
-    if (!transforms.get(entity)) {
-        std::cout << "transform component cleaned up successfully\n";
-    }
-
-    if (!velocities.get(entity)) {
-        std::cout << "velocity component cleaned up successfully\n";
+    } catch (std::exception& e) {
+        std::cerr << e.what();
     }
 
     return 0;

@@ -17,7 +17,10 @@
 
 #include "entitymanager.hpp"
 
+#include <format>
 #include <stdexcept>
+
+#include "aliases.hpp"
 
 namespace bail::ecs {
 
@@ -25,41 +28,44 @@ Entity EntityManager::createEntity() {
     if (!availableEntities.empty()) {
         Entity id = availableEntities.front();
         availableEntities.pop();
+        ++generationCounters[id];
 
         return id;
     }
 
-    if (next >= generations.size()) {
-        generations.resize(next + 1, 0);
-    }
+    Entity id = nextEntity++;
+    generationCounters[id] = 0;
 
-    return next++;
+    return id;
 }
 
 void EntityManager::destroyEntity(Entity entity) {
-    if (entity < generations.size()) {
-        ++generations[entity];
-        availableEntities.push(entity);
+    if (!isValid(entity)) {
+        return;
+    }
 
-        for (const auto& remover : removers) {
-            remover(entity);
-        }
+    availableEntities.push(entity);
+    ++generationCounters[entity];
+
+    for (const auto& remover : removers) {
+        remover(entity);
     }
 }
 
-bool EntityManager::isValid(Entity entity, uint32_t generation) const {
-    bool inRange = entity < generations.size();
-    bool generationMatch = inRange && generations[entity] == generation;
+void EntityManager::registerRemover(std::function<void(Entity)> remover) {
+    removers.push_back(remover);
+}
 
-    return generationMatch;
+bool EntityManager::isValid(Entity entity) const {
+    return generationCounters.find(entity) != generationCounters.end();
 }
 
 Generation EntityManager::getEntityGeneration(Entity entity) const {
-    if (entity >= generations.size()) {
-        throw std::runtime_error("invalid entity id");
+    if (!isValid(entity)) {
+        throw std::runtime_error(std::format("invalid entity with id {}", entity));
     }
 
-    return generations[entity];
+    return generationCounters.at(entity);
 }
 
 }
