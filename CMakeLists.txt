@@ -8,11 +8,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "raylib static" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "raylib examples" FORCE)
 add_subdirectory(vendor/raylib)
+add_subdirectory(vendor/fmt)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/systems/*.cpp src/ecs/*.cpp)
 
 add_executable(bail ${SOURCES})
-target_link_libraries(bail PRIVATE raylib)
+target_link_libraries(bail PRIVATE raylib fmt)
 target_include_directories(bail PUBLIC src/)
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/dist/bin")
