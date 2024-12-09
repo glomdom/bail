@@ -19,6 +19,7 @@
 
 #include <stdexcept>
 #include <unordered_map>
+#include <fmt/format.h>
 
 #include "aliases.hpp"
 #include "concepts.hpp"
@@ -31,7 +32,7 @@ class ComponentStorage {
 public:
     void add(Entity entity, Component component) {
         if (components.contains(entity)) {
-            throw std::logic_error(std::format("component already exists for entity with id {}", entity));
+            throw std::logic_error(fmt::format("component already exists for entity with id {}", entity));
         }
 
         components[entity] = std::move(component);
@@ -39,7 +40,7 @@ public:
 
     void remove(Entity entity) {
         if (components.contains(entity)) {
-            throw std::logic_error(std::format("component not found for entity with id {}", entity));
+            throw std::logic_error(fmt::format("component not found for entity with id {}", entity));
         }
 
         components.erase(entity);
@@ -47,7 +48,7 @@ public:
 
     Component& get(Entity entity) {
         if (!contains(entity)) {
-            throw std::out_of_range(std::format("entity {} does not have components", entity));
+            throw std::out_of_range(fmt::format("entity {} does not have components", entity));
         }
 
         return components.at(entity);

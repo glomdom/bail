@@ -17,8 +17,7 @@
 
 #include "entitymanager.hpp"
 
-#include <format>
-#include <stdexcept>
+#include <fmt/format.h>
 
 #include "aliases.hpp"
 
@@ -62,7 +61,7 @@ bool EntityManager::isValid(Entity entity) const {
 
 Generation EntityManager::getEntityGeneration(Entity entity) const {
     if (!isValid(entity)) {
-        throw std::runtime_error(std::format("invalid entity with id {}", entity));
+        throw std::runtime_error(fmt::format("invalid entity with id {}", entity));
     }
 
     return generationCounters.at(entity);
