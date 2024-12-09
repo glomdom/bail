@@ -9,7 +9,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "raylib static" FORCE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "raylib examples" FORCE)
 add_subdirectory(vendor/raylib)
 
-file(GLOB_RECURSE SOURCES src/*.cpp src/*/*.cpp src/*.hpp src/*/*.hpp)
+file(GLOB_RECURSE SOURCES src/*.cpp src/systems/*.cpp src/ecs/*.cpp)
 
 add_executable(bail ${SOURCES})
 target_link_libraries(bail PRIVATE raylib)
