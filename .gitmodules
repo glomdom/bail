@@ -4,6 +4,6 @@
 [submodule "vendor/fmt"]
 	path = vendor/fmt
 	url = https://github.com/fmtlib/fmt
-[submodule "vendor/bullet"]
-	path = vendor/bullet
-	url = https://github.com/bulletphysics/bullet3
+[submodule "vendor/JoltPhysics"]
+	path = vendor/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics
